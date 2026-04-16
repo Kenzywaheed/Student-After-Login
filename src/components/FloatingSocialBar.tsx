@@ -1,10 +1,19 @@
+import { MessageCircle } from 'lucide-react';
+import { useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useChat } from '../context/ChatContext';
+
 export function FloatingSocialBar() {
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const { user } = useAuth();
+  const { toggleChat, unreadCount } = useChat();
+
 // Social links to match Angular reference global-social-sidebar
 const socialLinks = [
   { icon: 'fab fa-linkedin-in', href: 'https://eg.linkedin.com/school/misr-university-for-science-and-technology/', label: 'LinkedIn', color: '#1f3769' },
-  { icon: 'fab fa-facebook-f', href: 'https://www.facebook.com/Must.University', label: 'Facebook', color: '#1f3769' },
+  { icon: 'fab fa-facebook-f', href: 'https://www.facebook.com/groups/271864861322223', label: 'Facebook', color: '#1f3769' },
   { icon: 'fab fa-instagram', href: 'https://www.instagram.com/must_university/', label: 'Instagram', color: '#1f3769' },
-  { icon: 'fab fa-x-twitter', href: 'https://twitter.com/must_university', label: 'X (Twitter)', color: '#1f3769' },
+  { icon: 'fab fa-twitter', href: 'https://twitter.com/must_university', label: 'X (Twitter)', color: '#1f3769' },
   { icon: 'fab fa-whatsapp', href: 'https://chat.whatsapp.com/BdekmLTYMbR9M9ibkl703w', label: 'WhatsApp', color: '#25D366' },
 ];
 
@@ -28,6 +37,23 @@ const socialLinks = [
           <i className={`${icon} text-lg md:text-xl transition-transform duration-200 group-hover:scale-110`}></i>
         </a>
       ))}
+
+      {user && (
+        <button
+          ref={buttonRef}
+          type="button"
+          onClick={() => toggleChat(buttonRef.current)}
+          className="relative w-10 h-10 md:w-12 md:h-12 rounded-full border border-gray-200 flex items-center justify-center bg-[#1f3769] text-white shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300 ease-in-out"
+          aria-label="Open chat"
+        >
+          <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-red-600 text-white text-[10px] leading-[1.1rem] font-bold text-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </button>
+      )}
     </div>
   );
 }

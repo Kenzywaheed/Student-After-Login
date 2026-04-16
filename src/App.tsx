@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
-import i18n from './i18n';
 import { AnimatePresence, motion } from 'framer-motion';
 import { MustHeader } from './components/MustHeader/MustHeader';
 import { Footer } from './components/Footer';
 import { HeroSlider } from './components/HeroSlider';
 import { FloatingSocialBar } from './components/FloatingSocialBar';
-import { LinksBar } from './components/LinksBar';
+import { ChatPanel } from './components/Chat/ChatPanel';
+
 // Pages
-import { Dashboard } from './pages/Dashboard';
-import {Academics} from "./pages/Accademics/Academics.tsx";
+import { Academics } from "./pages/Accademics/Academics";
+import Undergraduate from "./pages/Accademics/homepage/Undergraduate";
+import FormationOfCollegeCouncil from "./pages/Accademics/homepage/FormationOfCollegeCouncil";
+import Postgraduate from "./pages/Accademics/homepage/Postgraduate";
+import Schedules from "./pages/Accademics/homepage/Schedules";
 import Questionnaires from './pages/Questionnaires';
 import { Resources } from './pages/Resources';
 import { Announcements } from './pages/Announcements';
@@ -20,25 +22,28 @@ import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import { SubmitRequest } from './pages/SubmitRequest';
 import { MyRequests } from './pages/MyRequests';
-import { RootPage } from './pages/RootHome/RootPage';
-import { Schedule } from './pages/Schedule';
+import HomePage from './pages/Home';
+import { CmsPage } from './pages/CmsPage';
+import Playground from './pages/Playground';
+import { NotFound } from './pages/NotFound';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+
+// Custom Collection Pages
+import News from './pages/News'; 
+import Events from './pages/Events'; 
+
 import { ProfileProvider } from './contexts/ProfileContext';
 import { RequestsProvider } from './contexts/RequestsContext';
-import { LanguageProvider, Language, useLanguage } from './contexts/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
+import { ChatStoreProvider } from './context/ChatContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-export type PageType = 'dashboard' | 'academics' | 'questionnaires' | 'resources' | 'announcements' | 'notifications' | 'contact-us' | 'profile' | 'settings' | 'submit-request' | 'my-requests';
-
-export type { Language } from './contexts/LanguageContext';
+export type PageType = 'academics' | 'questionnaires' | 'resources' | 'announcements' | 'notifications' | 'contact-us' | 'profile' | 'settings' | 'submit-request' | 'my-requests';
 
 function AppContent() {
   const [darkMode, setDarkMode] = useState(false);
-  const { language, dispatch: languageDispatch } = useLanguage();
   const location = useLocation();
-
-  const toggleLanguage = (lang: Language) => {
-    languageDispatch({ type: 'SET_LANGUAGE', payload: lang });
-    i18n.changeLanguage(lang);
-  };
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
@@ -55,11 +60,9 @@ function AppContent() {
     }
   }, []);
 
-  const currentPage = location.pathname.slice(1) as PageType || 'dashboard';
-
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-comfortDark-bg text-comfortDark-text' : 'bg-white text-gray-900'}`}>
-<MustHeader language={language as any} onToggleLanguage={toggleLanguage as any} darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
+      <MustHeader darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
 
       <HeroSlider />
       <main className="flex-1 pt-24 md:pt-28 lg:pt-32">
@@ -71,19 +74,35 @@ function AppContent() {
             transition={{ duration: 0.2 }}
             className="min-h-[calc(100vh-140px)]">
             <Routes>
-              <Route path="/" element={<RootPage />} />
-              <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path="/home" element={<HomePage />} />
+              
+              {/* --- CUSTOM COLLECTION ROUTES --- */}
               <Route path="/academics" element={<Academics />} />
-              <Route path="/questionnaires" element={<Questionnaires darkMode={darkMode} />} />
+              <Route path="/undergraduate" element={<Undergraduate />} />
+              <Route path="/formation-of-college-council" element={<FormationOfCollegeCouncil />} />
+              <Route path="/postgraduate" element={<Postgraduate />} />
+              <Route path="/schedules" element={<Schedules />} />
+              <Route path="/news" element={<News />} />
+              <Route path="/events" element={<Events />} />
+              {/* ------------------------------------- */}
+
+              <Route path="/questionnaires" element={<Questionnaires />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/announcements" element={<Announcements />} />
               <Route path="/notifications" element={<Notifications />} />
+              <Route path="/contactus" element={<ContactUs />} />
               <Route path="/contact-us" element={<ContactUs />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/submit-request" element={<SubmitRequest />} />
-  <Route path="/my-requests" element={<MyRequests />} />
-  <Route path="/schedule" element={<Schedule darkMode={darkMode} />} />
+              <Route path="/my-requests" element={<MyRequests />} />
+              <Route path="/playground" element={<Playground />} />
+              
+              <Route path="/:slug" element={<CmsPage />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
 
           </motion.div>
@@ -91,14 +110,15 @@ function AppContent() {
       </main>
       <Footer darkMode={darkMode} />
       <FloatingSocialBar />
+      <ChatPanel />
     </div>
   );
 }
 
 export function App() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <LanguageProvider>
+    <AuthProvider>
+      <ChatStoreProvider>
         <ProfileProvider>
           <RequestsProvider>
             <BrowserRouter>
@@ -106,8 +126,7 @@ export function App() {
             </BrowserRouter>
           </RequestsProvider>
         </ProfileProvider>
-      </LanguageProvider>
-    </I18nextProvider>
+      </ChatStoreProvider>
+    </AuthProvider>
   );
 }
-

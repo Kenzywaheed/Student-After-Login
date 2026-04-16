@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function Navbar() {
   const links = [
     'The university',
@@ -12,7 +10,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="w-full bg-indigo-900 px-6 py-4 flex items-center justify-between z-50 relative">
+    <nav className="w-full bg-indigo-900 px-4 py-4 flex items-center justify-between z-50 relative">
       <div className="flex items-center space-x-4">
         {/* Logo Placeholder */}
         <div className="bg-emerald-600 text-white font-bold px-4 py-2 rounded">
